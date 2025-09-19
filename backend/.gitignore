@@ -1,5 +1,4 @@
-# Ignorar o application.properties
-backend/src/main/resources/application.properties
+
 .env
 HELP.md
 target/

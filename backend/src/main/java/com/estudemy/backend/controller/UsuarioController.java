@@ -17,6 +17,31 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    // ✅ Cadastrar usuário com verificação de email e username duplicado
+    @PostMapping
+    public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody Usuario usuario) {
+
+        // Verifica email
+        Optional<Usuario> emailExistente = usuarioRepository.findByUsuarioEmail(usuario.getUsuarioEmail());
+        if (emailExistente.isPresent()) {
+            return ResponseEntity.badRequest().body(
+                    new MensagemErro("E-mail já cadastrado!")
+            );
+        }
+
+        // Verifica username
+        Optional<Usuario> usernameExistente = usuarioRepository.findByUsuarioUserName(usuario.getUsuarioUserName());
+        if (usernameExistente.isPresent()) {
+            return ResponseEntity.badRequest().body(
+                    new MensagemErro("Username já cadastrado!")
+            );
+        }
+
+        // Salva usuário se não houver duplicata
+        Usuario salvo = usuarioRepository.save(usuario);
+        return ResponseEntity.ok(salvo);
+    }
+
     // ✅ Listar todos os usuários
     @GetMapping
     public List<Usuario> listarUsuarios() {
@@ -29,13 +54,6 @@ public class UsuarioController {
         Optional<Usuario> usuario = usuarioRepository.findById(id);
         return usuario.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
-
-    // ✅ Criar novo usuário
-    @PostMapping
-    public ResponseEntity<Usuario> criarUsuario(@Valid @RequestBody Usuario usuario) {
-        Usuario novoUsuario = usuarioRepository.save(usuario);
-        return ResponseEntity.ok(novoUsuario);
     }
 
     // ✅ Atualizar usuário
@@ -69,5 +87,15 @@ public class UsuarioController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    // Classe auxiliar para mensagem de erro
+    static class MensagemErro {
+        public String mensagem;
+        public MensagemErro(String mensagem) {
+            this.mensagem = mensagem;
+        }
+    }
 }
+
+
 
